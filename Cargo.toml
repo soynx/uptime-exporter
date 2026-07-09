@@ -1,0 +1,25 @@
+[package]
+name = "uptime-exporter"
+version = "0.1.0"
+edition = "2021"
+description = "HTTP uptime & response-time exporter for Prometheus, built for Host-header-routed (wildcard domain) reverse-proxy setups"
+license = "MIT"
+
+[dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal", "time", "net"] }
+# Both root stores: webpki (compiled-in Mozilla roots, works in minimal containers)
+# + native (host trust store, so corporate/private CAs are honored like curl does).
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-webpki-roots", "rustls-tls-native-roots", "http2"] }
+prometheus = { version = "0.14", default-features = false }
+axum = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_yaml_ng = "0.10"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+anyhow = "1"
+thiserror = "2"
+rand = "0.9"
+
+[profile.release]
+lto = "thin"
+strip = true

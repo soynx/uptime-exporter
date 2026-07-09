@@ -1,0 +1,57 @@
+# uptime-exporter configuration
+#
+# `defaults:` applies to every service unless the service overrides the field.
+# All duration values are integer seconds.
+
+defaults:
+  interval_seconds: 30
+  timeout_seconds: 10
+  method: GET
+  # Inclusive [low, high] HTTP status ranges that count as "up".
+  # 5xx from the reverse proxy (dead backend) is correctly treated as DOWN.
+  acceptable_status: [[200, 399]]
+  follow_redirects: true
+  # LAN-pin: resolve every probed hostname to the reverse proxy's LAN address
+  # instead of the public wildcard record. Host header + SNI stay the real
+  # subdomain, so reverse-proxy routing and certificate validation work exactly
+  # as they do for external visitors — but the probe no longer depends on the
+  # router's NAT hairpinning (unreliable on many consumer routers).
+  # Set to your reverse proxy's LAN IP. Empty or omitted = normal DNS.
+  resolve_override: "192.168.1.10:443"
+
+services:
+  - name: portainer
+    url: https://portainer.example.com
+  - name: grafana
+    url: https://grafana.example.com
+  - name: nextcloud
+    url: https://cloud.example.com
+
+  # Service behind basic-auth (reverse-proxy middleware): an unauthenticated
+  # probe gets 401 *from the middleware*, before the backend is ever contacted.
+  # Accepting 401 verifies DNS + TLS + proxy routing, but NOT the backend itself.
+  - name: prometheus
+    url: https://prometheus.example.com
+    acceptable_status: [[401, 401]]
+
+  # Service routed via a secret path (in-path access token).
+  # NOTE: the URL (incl. the token) becomes a Prometheus label and is visible
+  # in Grafana — only do this on a private monitoring stack, and update the
+  # config when the token rotates. Any non-5xx answer proves the backend
+  # responded, hence [200, 499].
+  - name: private-api
+    url: https://api.example.com/<your-access-token>/
+    acceptable_status: [[200, 499]]
+
+  # External site (internet-connectivity canary / "watchdog's watchdog").
+  # MUST opt out of the LAN pin: pinning a foreign hostname to your reverse
+  # proxy would serve the wrong certificate and always fail.
+  - name: external-site
+    url: https://example.org/
+    resolve_override: ""
+
+  # Other per-service overrides:
+  # - name: slow-service
+  #   url: https://slow.example.com
+  #   interval_seconds: 60
+  #   timeout_seconds: 20
