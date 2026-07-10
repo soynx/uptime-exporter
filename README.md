@@ -4,6 +4,22 @@ HTTP uptime & response-time exporter for Prometheus, built for homelabs where a
 reverse proxy (Traefik) routes many services on a **wildcard domain** by Host
 header (`portainer.example.com`, `grafana.example.com`, ... → one public IP).
 
+## Quick Setup
+
+Setup on docker:
+
+```yaml
+services:
+  uptime-exporter:
+    image: ghcr.io/soynx/uptime-exporter:latest
+    restart: unless-stopped
+    volumes:
+      - /path/to/config:/etc/uptime-exporter:ro  # mount config file
+    ports:
+      - "9184:9184"
+```
+Exposes `/metrics` at port `9184` on host
+
 ## Why HTTP probes, not ping
 
 With wildcard DNS every subdomain resolves to the **same IP**; routing to the
