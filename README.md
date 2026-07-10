@@ -105,10 +105,7 @@ curl -s localhost:9184/metrics | grep uptime_probe
 
 ## Docker
 
-Tagged releases (`v*`) are built and published to GHCR by CI
-([`docker-publish.yml`](.github/workflows/docker-publish.yml)) as
-`ghcr.io/<owner>/uptime-exporter` with `latest`, `X.Y` and `X.Y.Z` tags.
-Or build locally:
+Use my public docker-image `ghcr.io/soynx/uptime-exporter:latest` or build locally:
 
 ```bash
 docker build -t uptime-exporter .
@@ -122,7 +119,7 @@ Portainer stack (attach to the network Prometheus scrapes on):
 ```yaml
 services:
   uptime-exporter:
-    image: ghcr.io/<owner>/uptime-exporter:latest
+    image: ghcr.io/soynx/uptime-exporter:latest
     restart: unless-stopped
     volumes:
       - /opt/uptime-exporter/config.yaml:/etc/uptime-exporter/config.yaml:ro
